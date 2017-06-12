@@ -10,11 +10,28 @@ behind the scenes it will generate a `NinePatchDrawable` and set as background f
 
 ## Examples
 
+Android resource:
 ```javascript
 import ImageCapInset from 'react-native-image-capinsets';
 
 <ImageCapInset
-  source={require('./bubble.png')}
-  capInsets={{ top: 8, right: 8, bottom: 8, left: 8 }}
-  />
+	source={require('./bubble.png')}
+	capInsets={{ top: 8, right: 8, bottom: 8, left: 8 }}
+	/>
+```
+
+Local file:
+```javascript
+<ImageCapInset source={{uri: "/data/user/0/com.example/files/content/test.png"}}
+			   resizeMode="stretch"
+			   capInsets={{top: 8, right: 8, bottom: 8, left: 8}}
+			   />
+```
+
+Remote file:
+```javascript
+<ImageCapInset source={{uri: "https://examplesite.com/test.png"}}
+			   resizeMode="stretch"
+			   capInsets={{top: 8, right: 8, bottom: 8, left: 8}}
+			   />
 ```
