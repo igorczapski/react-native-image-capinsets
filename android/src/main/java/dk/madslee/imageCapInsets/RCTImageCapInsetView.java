@@ -1,59 +1,63 @@
 package dk.madslee.imageCapInsets;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.NinePatchDrawable;
+import android.os.AsyncTask;
 import android.widget.ImageView;
 import dk.madslee.imageCapInsets.utils.NinePatchBitmapFactory;
 import dk.madslee.imageCapInsets.utils.RCTImageLoaderListener;
 import dk.madslee.imageCapInsets.utils.RCTImageLoaderTask;
 
-
+/**
+ * This imageview generates nine patch drawable on its background.
+ */
 public class RCTImageCapInsetView extends ImageView {
-    private Rect mCapInsets;
-    private String mUri;
+	private Rect mCapInsets;
+	private String mUri;
 
-    public RCTImageCapInsetView(Context context) {
-        super(context);
+	public RCTImageCapInsetView(Context context) {
+		super(context);
+		mCapInsets = new Rect();
+	}
 
-        mCapInsets = new Rect();
-    }
+	public void setCapInsets(Rect insets) {
+		mCapInsets = insets;
+		reload();
+	}
 
-    public void setCapInsets(Rect insets) {
-        mCapInsets = insets;
-        reload();
-    }
+	public void setSource(String uri) {
+		mUri = uri;
+		reload();
+	}
 
-    public void setSource(String uri) {
-        mUri = uri;
-        reload();
-    }
+	public void reload() {
+		final String key = mUri + "-" + mCapInsets.toShortString();
+		final RCTImageCache cache = RCTImageCache.getInstance();
 
-    public void reload() {
-        final String key = mUri + "-" + mCapInsets.toShortString();
-        final RCTImageCache cache = RCTImageCache.getInstance();
+		if (cache.has(key)) {
+			setBackground(cache.get(key));
+			return;
+		}
 
-        if (cache.has(key)) {
-            setBackground(cache.get(key));
-            return;
-        }
+		RCTImageLoaderTask task = new RCTImageLoaderTask(mUri, getContext(), new RCTImageLoaderListener() {
+			@Override
+			public void onImageLoaded(Bitmap bitmap) {
+				int ratio = Math.round(bitmap.getDensity() / 160);
+				int top = mCapInsets.top * ratio;
+				int right = bitmap.getWidth() - (mCapInsets.right * ratio);
+				int bottom = bitmap.getHeight() - (mCapInsets.bottom * ratio);
+				int left = mCapInsets.left * ratio;
 
-        RCTImageLoaderTask task = new RCTImageLoaderTask(mUri, getContext(), new RCTImageLoaderListener() {
-            @Override
-            public void onImageLoaded(Bitmap bitmap) {
-                int ratio = Math.round(bitmap.getDensity() / 160);
-                int top = mCapInsets.top * ratio;
-                int right = bitmap.getWidth() - (mCapInsets.right * ratio);
-                int bottom = bitmap.getHeight() - (mCapInsets.bottom * ratio);
-                int left = mCapInsets.left * ratio;
+				NinePatchDrawable ninePatchDrawable = NinePatchBitmapFactory
+						.createNinePathWithCapInsets(getResources(), bitmap, top, left, bottom, right, null);
+				setBackground(ninePatchDrawable);
 
-                NinePatchDrawable ninePatchDrawable = NinePatchBitmapFactory.createNinePathWithCapInsets(getResources(), bitmap, top, left, bottom, right, null);
-                setBackground(ninePatchDrawable);
+				cache.put(key, ninePatchDrawable);
+			}
+		});
 
-                cache.put(key, ninePatchDrawable);
-            }
-        });
-
-        task.execute();
-    }
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
 }
