@@ -1,6 +1,8 @@
 package dk.madslee.imageCapInsets;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.AsyncTask;
 import android.widget.ImageView;
