@@ -37,7 +37,7 @@ public class RCTImageCapInsetView extends ImageView {
 		final RCTImageCache cache = RCTImageCache.getInstance();
 
 		if (cache.has(key)) {
-			setBackground(cache.get(key));
+			setBackground(cache.get(key).getConstantState().newDrawable());
 			return;
 		}
 
